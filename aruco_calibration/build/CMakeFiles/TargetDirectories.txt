@@ -1,0 +1,3 @@
+/home/user/Desktop/Practica2/aruco_calibration/build/CMakeFiles/rebuild_cache.dir
+/home/user/Desktop/Practica2/aruco_calibration/build/CMakeFiles/edit_cache.dir
+/home/user/Desktop/Practica2/aruco_calibration/build/CMakeFiles/aruco_calibration.dir
