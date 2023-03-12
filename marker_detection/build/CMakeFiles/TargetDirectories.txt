@@ -1,0 +1,3 @@
+/home/user/Desktop/Practica2/marker_detection/build/CMakeFiles/rebuild_cache.dir
+/home/user/Desktop/Practica2/marker_detection/build/CMakeFiles/edit_cache.dir
+/home/user/Desktop/Practica2/marker_detection/build/CMakeFiles/marker_detection.dir
