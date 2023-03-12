@@ -1,0 +1,3 @@
+/home/user/Desktop/Practica2/draw_cube/build/CMakeFiles/rebuild_cache.dir
+/home/user/Desktop/Practica2/draw_cube/build/CMakeFiles/edit_cache.dir
+/home/user/Desktop/Practica2/draw_cube/build/CMakeFiles/draw_cube.dir
