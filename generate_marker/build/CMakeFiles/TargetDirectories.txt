@@ -1,0 +1,3 @@
+/home/user/Desktop/Practica2/generate_marker/build/CMakeFiles/rebuild_cache.dir
+/home/user/Desktop/Practica2/generate_marker/build/CMakeFiles/edit_cache.dir
+/home/user/Desktop/Practica2/generate_marker/build/CMakeFiles/generate_marker.dir
