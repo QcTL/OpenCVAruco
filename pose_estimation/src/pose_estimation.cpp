@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
   
   cv::VideoCapture webCam(std::atoi(argv[1]));       // VideoCapture object declaration. Usually 0 is the integrated, 2 is the first external USB one
 
-  if (webCam.isOpened() == false){   // Check if the VideoCapture object has been correctly associated to the webcam
+  if (webCam.isOpened() == false){   // Check if the VideoCapture object has been correctly associated to the webcam associated to the webcam
     std::cerr << "error: Webcam could not be connected." << std::endl;
     return -1;
   }
@@ -49,15 +49,7 @@ int main(int argc, char* argv[]) {
  	cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(at);
  	cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
 
- 	//FileStorage fs(detectorPara, FileStorage::READ); //Carreguem els paràmetres del detector.
-  /*
-  bool readOk = (*detectorParams)->readDetectorParameters(fs.root());
-  
-  if(!readOk){
-  	cout << "Fitxer de paràmetres del detector incorrecte" << endl;
-  	return -1;
-  }
-  */
+
   cv::Mat cameraMatrix, distCoeffs;
   readCameraParameters(cameraConfig, cameraMatrix, distCoeffs);
   
@@ -84,7 +76,7 @@ int main(int argc, char* argv[]) {
 		inputImage.copyTo(outputImage);
 		cv::aruco::detectMarkers(inputImage, dictionary, markerCorners, markerIds, detectorParams, rejectedCandidates);
 		if (markerIds.size() > 0){
-		
+     	
 			cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
 			int nMarkers = markerCorners.size();
 		  std::vector<cv::Vec3d> rvecs(nMarkers), tvecs(nMarkers);
@@ -94,7 +86,11 @@ int main(int argc, char* argv[]) {
 		  }
 		  // Draw axis for each marker
 		  for(unsigned int i = 0; i < markerIds.size(); i++) {
-		  	if(markerIds[i] == id) cv::drawFrameAxes(outputImage, cameraMatrix, distCoeffs, rvecs[i], tvecs[i], 0.1);
+		  	if(markerIds[i] == id){
+		  	//Calculem les coordenades de l'origen de la marca aruco respecte la camara.
+				putText(outputImage, "Marker coordinate ( " + to_string(tvecs[i][0]) + "," + to_string(tvecs[i][1]) + "," + to_string(tvecs[i][2]) + ")", Point(10, 20), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255), 2);
+     		cv::drawFrameAxes(outputImage, cameraMatrix, distCoeffs, rvecs[i], tvecs[i], 0.1);
+		  	} 
 		    else break;
 		  }
 		} 
