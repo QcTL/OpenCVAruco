@@ -14,6 +14,11 @@ const int NDICT = 20;
 const string DN[] = {"DICT_4X4_50", "DICT_4X4_100", "DICT_4X4_250","DICT_4X4_1000","DICT_5X5_50","DICT_5X5_100","DICT_5X5_250","DICT_5X5_1000","DICT_6X6_50","DICT_6X6_100","DICT_6X6_250","DICT_6X6_1000","DICT_7X7_50","DICT_7X7_100","DICT_7X7_250","DICT_7X7_1000","DICT_ARUCO_ORIGINAL","DICT_APRILTAG_16h5","DICT_APRILTAG_25h9","DICT_APRILTAG_36h10","DICT_APRILTAG_36h11"};
   
 
+void drawLines(){
+	
+}
+
+
 int main(int argc, char* argv[]) {
   if (argc < 5){
     cerr << "Falten paràmetres" << endl;
@@ -61,15 +66,20 @@ int main(int argc, char* argv[]) {
   cv::Mat cameraMatrix, distCoeffs;
   readCameraParameters(cameraConfig, cameraMatrix, distCoeffs);
   
-  cv::Mat objPoints(4, 1, CV_32FC3);
-	objPoints.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(-sideLong/2.f, sideLong/2.f, 0);
-	objPoints.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(sideLong/2.f, sideLong/2.f, 0);
-	objPoints.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(sideLong/2.f, -sideLong/2.f, 0);
-	objPoints.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(-sideLong/2.f, -sideLong/2.f, 0);
   
+  //Creem tots els 8 punts que ha de tenir el nostre cub:
   
+  std::vector<cv::Point3f> cubeVertice;
+  cubeVertice.push_back(cv::Point3f(sideLong/2.f+sideLong/2.f, sideLong/2.f+sideLong/2.f, -sideLong));
+  cubeVertice.push_back(cv::Point3f(sideLong/2.f+sideLong/2.f, -sideLong/2.f+sideLong/2.f, -sideLong));
+  cubeVertice.push_back(cv::Point3f(-sideLong/2.f+sideLong/2.f, -sideLong/2.f+sideLong/2.f, -sideLong));
+  cubeVertice.push_back(cv::Point3f(-sideLong/2.f+sideLong/2.f, sideLong/2.f+sideLong/2.f, -sideLong));
+  cubeVertice.push_back(cv::Point3f(sideLong/2.f+sideLong/2.f, sideLong/2.f+sideLong/2.f, 0));
+  cubeVertice.push_back(cv::Point3f(sideLong/2.f+sideLong/2.f, -sideLong/2.f+sideLong/2.f, 0));
+  cubeVertice.push_back(cv::Point3f(-sideLong/2.f+sideLong/2.f, -sideLong/2.f+sideLong/2.f, 0));
+  cubeVertice.push_back(cv::Point3f(-sideLong/2.f+sideLong/2.f, sideLong/2.f+sideLong/2.f, 0));
   
-  
+  //Projectem els punts
 
   std::vector<int> markerIds;
 	std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
@@ -84,19 +94,28 @@ int main(int argc, char* argv[]) {
 		inputImage.copyTo(outputImage);
 		cv::aruco::detectMarkers(inputImage, dictionary, markerCorners, markerIds, detectorParams, rejectedCandidates);
 		if (markerIds.size() > 0){
-		
-			cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
-			int nMarkers = markerCorners.size();
-		  std::vector<cv::Vec3d> rvecs(nMarkers), tvecs(nMarkers);
 		  // Calculate pose for each marker
-		  for (int i = 0; i < nMarkers; i++) {
-		      solvePnP(objPoints, markerCorners.at(i), cameraMatrix, distCoeffs, rvecs.at(i), tvecs.at(i));
-		  }
+		  std::vector<cv::Vec3d> rvecs, tvecs;
+		  cv::aruco::estimatePoseSingleMarkers(markerCorners, sideLong, cameraMatrix, distCoeffs, rvecs, tvecs);
 		  // Draw axis for each marker
 		  for(unsigned int i = 0; i < markerIds.size(); i++) {
 		  	if(markerIds[i] == id){
-		  		
-		  	}
+		  		//Dibuixem una linia entre tots els punts per formar un cub
+		  		std::vector<cv::Point2f> imagePoints;
+  				projectPoints(cubeVertice, rvecs[i], tvecs[i], cameraMatrix, distCoeffs, imagePoints);
+		  		cv::line(outputImage, imagePoints[0], imagePoints[1], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[0], imagePoints[3], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[0], imagePoints[4], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[1], imagePoints[2], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[1], imagePoints[5], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[2], imagePoints[3], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[2], imagePoints[6], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[3], imagePoints[7], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[4], imagePoints[5], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[4], imagePoints[7], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[5], imagePoints[6], cv::Scalar(255,0,0), 3);
+		  		cv::line(outputImage, imagePoints[6], imagePoints[7], cv::Scalar(255,0,0), 3);
+		  	} 
 		    else break;
 		  }
 		} 
