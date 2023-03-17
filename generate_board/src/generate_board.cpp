@@ -60,24 +60,5 @@ int main(int argc, char* argv[]) {
   cv::imwrite(imageName, imgAruBoard);
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   return 0;
 }
