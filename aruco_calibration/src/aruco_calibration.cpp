@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
   int at = 0;
   bool found = false;
 
+	//Tecnica utilitzada en altres exercicis per aconseguir el diccionari basat en una entrada string del mateix.
   while(at<NDICT && !found){
   	if(dictSelected == DN[at]) found = true;
   	else at++;
@@ -51,7 +52,10 @@ int main(int argc, char* argv[]) {
   } 
 	
   cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(at);
+	//Inicializador del detector d'arucos.
   cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
+	
+	//Creació de la taula de les quals hem impres i farem fotografies, per el correcte funcionament ha de ser exactament aquesta.
   cv::Ptr<cv::aruco::GridBoard> board = cv::aruco::GridBoard::create(nColumns, nRows, sideLong, marckerDist, dictionary);
   FileStorage fs(detectorPara, FileStorage::READ); //Carreguem els paràmetres del detector.
 
@@ -71,17 +75,24 @@ int main(int argc, char* argv[]) {
   Size imgSize;
   int nCapture = 0;
   while(charCheckForKey != 27 && webCam.isOpened()){
+	  
+	  //Com en l'exercici de detecció de aruco, tindrem dos matrius, la primera serà simplement la que rep la camara i que utilitzarem
+	  //Per detectar arucos, la segona, una que es mostrarà a l'usuari i que tindrà informaciò sobre el que està veient la camera.
 	webCam.read(inputImage);
 	inputImage.copyTo(outputImage);
 	cv::aruco::detectMarkers(inputImage, dictionary, markerCorners, markerIds, detectorParams, rejectedCandidates);
 	
+	  //Si trobem alguna aruco per pantalla, la mostrem en la matriu de sortida amb les seves qualtitats.
 	if (markerIds.size() > 0) cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
 	
+	  //Mostrem el text per pantalla, per això necessitarem definir sobre quina matriu es mostrarà i les caracteristiques del text.
+	  	//Cal dir que el Scalar en aquest context és Blue, Green, Red
 	putText(outputImage, "Captures taken ( " + to_string(nCapture) + "/20)", Point(10, 20), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255, 0, 0), 2);
 		
     	cv::imshow("out", outputImage);
     
-    	charCheckForKey = cv::waitKey(1);  // gets the key pressed
+    	charCheckForKey = cv::waitKey(1);  // Detectem la tecla pressa abans del if per poder fer una fotografia en el mateix cicle
+	  					//que estem veien les marques en la imatge.
 
 	if(charCheckForKey == 'c' && markerIds.size() == nRows*nColumns && nCapture<=20){ //Si cliques la tecla 'c' i s'han detectat totes les maqrques aruco
 		allCorners.push_back(markerCorners);
@@ -98,13 +109,16 @@ int main(int argc, char* argv[]) {
   }
 
   Mat cameraMatrix, distCoeffs;
-  vector< Mat > rvecs, tvecs;
+  vector< Mat > rvecs, tvecs; //Representaran els diferents valors de rotació i translació que tenen les marques en les imatges realitzades.
   double repError;
   
   vector<vector<Point2f>> allCornersConcatenated;
   vector<int> allIdsConcatenated;
   vector<int> markerCounterPerFrame;
   markerCounterPerFrame.reserve(allCorners.size());
+	
+	//Voldrem tenir un sol vector de vectors de punts que representaran el seguit de marques totes juntes, també voldrem tenir una
+	//Llista de totes les identificacions de les marques entrades, com també quines marques apareixen per cada foto.
   for(unsigned int i = 0; i < allCorners.size(); i++) {
       markerCounterPerFrame.push_back((int)allCorners[i].size());
       for(unsigned int j = 0; j < allCorners[i].size(); j++) {
@@ -117,7 +131,21 @@ int main(int argc, char* argv[]) {
   repError = aruco::calibrateCameraAruco(allCornersConcatenated, allIdsConcatenated,
                                          markerCounterPerFrame, board, imgSize, cameraMatrix,
                                          distCoeffs, rvecs, tvecs, 0);
-
+   /*Parametres:
+	- És una llista de tots els costats detectats en totes les fotos
+	- Una llista de tots els identificadors que haurian de representar els mateixos valors i ordres de la llista anterior
+	- Quants marcadors hi ha en cada fotografia
+	- De quina "Board" s'han fet les captures
+	- La mida de les marques en metres de les quals s'han fet la fotografia
+	- Se li entrarà una matriu i generarà una matriu 3x3 amb la transformació
+	- S'emplena una matriu i es retorneran els coficients de distorció de la camera.
+	- rvecs representarà un vector que contindrà la rotació de cada una de les marques que s'han entrat
+	- tvecs representarà un vector que contindrà la translació de cada una de les marques que s'han entrat
+	- l'ultim canvia el valor entrat per unvector dels errors estimats que s'han donat a cada marca, però introduim un 0
+		a causa que no utilitzarem el valor.
+  */	
+	
+	
   //Guardem el fitxer .yml amb la configuracio
   bool saveS = saveCameraParams(settingsOut, imgSize, 1, 0, cameraMatrix,
                                  distCoeffs, repError);
